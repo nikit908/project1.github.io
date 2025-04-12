@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Викторина по программированию</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            background: #0a0a1a;
+            color: #e0e0ff;
+        }
+        
+        /* Стартовый экран */
+        .start-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0f0c29 0%, #1a1a4a 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: opacity 1s ease-in-out;
+        }
+        
+        .start-screen h1 {
+            font-size: 3rem;
+            margin-bottom: 2rem;
+            text-shadow: 0 0 10px #00ffff, 0 0 20px #0088ff;
+            animation: glow 2s infinite alternate;
+        }
+        
+        .start-btn {
+            padding: 15px 40px;
+            background: transparent;
+            color: #00ffff;
+            border: 2px solid #00ffff;
+            border-radius: 50px;
+            font-size: 1.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 10px #00ffff, 0 0 20px rgba(0, 255, 255, 0.3);
+            animation: pulse 1.5s infinite;
+        }
+        
+        .start-btn:hover {
+            background: rgba(0, 255, 255, 0.1);
+            transform: scale(1.05);
+        }
+        
+        /* Теоретическая справка */
+        .theory-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0f0c29 0%, #1a1a4a 100%);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+            padding: 40px;
+            overflow-y: auto;
+        }
+        
+        .theory-content {
+            max-width: 800px;
+            background: rgba(16, 36, 94, 0.7);
+            border: 1px solid #4fc3f7;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 0 20px rgba(79, 195, 247, 0.5);
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .theory-content h2 {
+            color: #4fc3f7;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .theory-item {
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(79, 195, 247, 0.3);
+        }
+        
+        .theory-item h3 {
+            color: #e0f7fa;
+            margin-bottom: 10px;
+        }
+        
+        .theory-item p {
+            color: #b0bec5;
+            line-height: 1.6;
+        }
+        
+        .start-quiz-btn {
+            margin-top: 30px;
+            padding: 12px 30px;
+            background: transparent;
+            color: #00ffff;
+            border: 2px solid #00ffff;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 10px #00ffff, 0 0 20px rgba(0, 255, 255, 0.3);
+        }
+        
+        .start-quiz-btn:hover {
+            background: rgba(0, 255, 255, 0.1);
+            transform: scale(1.05);
+        }
+        
+        /* Основной контент */
+        .quiz-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            display: none;
+        }
+        
+        .question {
+            font-size: 1.8rem;
+            margin-bottom: 30px;
+            font-weight: 600;
+            line-height: 1.4;
+            text-align: center;
+            text-shadow: 0 0 5px #00ffff;
+            color: #e0f7fa;
+        }
+        
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .option {
+            padding: 18px;
+            background: rgba(16, 36, 94, 0.7);
+            border: 1px solid #4fc3f7;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.1rem;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(5px);
+            color: #e0f7fa;
+            box-shadow: 0 0 10px rgba(79, 195, 247, 0.3);
+        }
+        
+        .option:hover {
+            background: rgba(26, 69, 158, 0.7);
+            transform: translateY(-3px);
+            box-shadow: 0 0 15px #4fc3f7;
+        }
+        
+        .option.selected.wrong {
+            background: rgba(244, 67, 54, 0.7);
+            border-color: #f44336;
+            animation: shake 0.5s;
+        }
+        
+        .option.selected.correct {
+            background: rgba(76, 175, 80, 0.7);
+            border-color: #4CAF50;
+            animation: pulse 0.5s;
+        }
+        
+        .quiz-controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .submit-btn {
+            flex: 1;
+            padding: 18px;
+            background: linear-gradient(135deg, #00acc1 0%, #00838f 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 10px #00acc1;
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 15px #00acc1;
+        }
+        
+        .submit-btn:disabled {
+            background: linear-gradient(135deg, #546e7a 0%, #37474f 100%);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .theory-btn {
+            padding: 18px;
+            background: transparent;
+            color: #00ffff;
+            border: 1px solid #00ffff;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+        }
+        
+        .theory-btn:hover {
+            background: rgba(0, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        .progress {
+            text-align: center;
+            color: #b0bec5;
+            font-size: 1.1rem;
+            font-weight: 500;
+            margin-bottom: 20px;
+            text-shadow: 0 0 5px #00ffff;
+        }
+        
+        /* Экран результатов */
+        .results-screen {
+            display: none;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background: rgba(16, 36, 94, 0.7);
+            border: 1px solid #4fc3f7;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(79, 195, 247, 0.5);
+        }
+        
+        .results-screen h2 {
+            color: #4fc3f7;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2rem;
+        }
+        
+        .score-display {
+            font-size: 1.5rem;
+            text-align: center;
+            margin-bottom: 30px;
+            color: #e0f7fa;
+        }
+        
+        .results-list {
+            margin-bottom: 30px;
+        }
+        
+        .result-item {
+            padding: 15px;
+            margin-bottom: 15px;
+            background: rgba(26, 69, 158, 0.3);
+            border-radius: 8px;
+            border-left: 3px solid #4fc3f7;
+        }
+        
+        .result-item.correct {
+            border-left-color: #4CAF50;
+        }
+        
+        .result-item.wrong {
+            border-left-color: #f44336;
+        }
+        
+        .restart-btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background: transparent;
+            color: #00ffff;
+            border: 2px solid #00ffff;
+            border-radius: 8px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+            text-align: center;
+        }
+        
+        .restart-btn:hover {
+            background: rgba(0, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        /* Анимации */
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 10px #00ffff, 0 0 20px #0088ff;
+            }
+            to {
+                text-shadow: 0 0 15px #00ffff, 0 0 30px #0088ff, 0 0 40px #0044ff;
+            }
+        }
+        
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 10px #00ffff, 0 0 20px rgba(0, 255, 255, 0.3);
+            }
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 0 15px #00ffff, 0 0 30px rgba(0, 255, 255, 0.5);
+            }
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 10px #00ffff, 0 0 20px rgba(0, 255, 255, 0.3);
+            }
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Стартовый экран -->
+    <div class="start-screen" id="start-screen">
+        <h1>Викторина по программированию</h1>
+        <button class="start-btn" id="start-btn">Начать</button>
+    </div>
+    
+    <!-- Теоретическая справка -->
+    <div class="theory-screen" id="theory-screen">
+        <div class="theory-content">
+            <h2>Теоретическая справка</h2>
+            
+            <div class="theory-item">
+                <h3>JavaScript</h3>
+                <p>Создан Бренданом Айком в 1995 году для Netscape. Первоначально назывался Mocha, затем LiveScript. Стал стандартом ECMA в 1997 году. Основной язык для веб-разработки.</p>
+            </div>
+            
+            <div class="theory-item">
+                <h3>Swift</h3>
+                <p>Язык Apple для разработки под iOS и macOS. Представлен в 2014 году как замена Objective-C. Отличается безопасностью и высокой производительностью.</p>
+            </div>
+            
+            <div class="theory-item">
+                <h3>TypeScript</h3>
+                <p>Разработан Microsoft в 2012 году. Надмножество JavaScript с добавлением статической типизации. Компилируется в чистый JavaScript.</p>
+            </div>
+            
+            <div class="theory-item">
+                <h3>Dart</h3>
+                <p>Язык Google для создания кроссплатформенных приложений через Flutter. Поддерживает как JIT, так и AOT компиляцию.</p>
+            </div>
+            
+            <div class="theory-item">
+                <h3>Ruby</h3>
+                <p>Создан Юкихиро Мацумото в 1995 году. Динамический язык с акцентом на простоту и продуктивность. Популярен благодаря Ruby on Rails.</p>
+            </div>
+            
+            <div class="theory-item">
+                <h3>Rust</h3>
+                <p>Язык системного программирования, разработанный Mozilla. Гарантирует безопасность памяти без сборщика мусора. Используется для высоконагруженных систем.</p>
+            </div>
+            
+            <div class="theory-item">
+                <h3>Kotlin</h3>
+                <p>Язык JetBrains, полностью совместимый с Java. Официальный язык для Android с 2017 года. Работает на JVM, компилируется в JavaScript и нативный код.</p>
+            </div>
+            
+            <div class="theory-item">
+                <h3>C#</h3>
+                <p>Объектно-ориентированный язык Microsoft для платформы .NET. Широко используется в разработке игр через Unity. Сочетает возможности C++ и Java.</p>
+            </div>
+            
+            <div class="theory-item">
+                <h3>Java</h3>
+                <p>Создан Sun Microsystems в 1995 году. Следует принципу WORA (Write Once Run Anywhere). Основной язык для корпоративных приложений.</p>
+            </div>
+            
+            <div class="theory-item">
+                <h3>Python</h3>
+                <p>Создан Гвидо ван Россумом в 1991 году. Назван в честь шоу "Летающий цирк Монти Пайтона". Лидер в области машинного обучения и анализа данных.</p>
+            </div>
+            
+            <button class="start-quiz-btn" id="start-quiz-btn">Начать викторину</button>
+        </div>
+    </div>
+    
+    <!-- Основной контент -->
+    <div class="quiz-container" id="quiz-container">
+        <div class="progress" id="progress"></div>
+        <div class="question" id="question"></div>
+        <div class="options" id="options"></div>
+        <div class="quiz-controls">
+            <button class="submit-btn" id="submit-btn" disabled>Ответить</button>
+            <button class="theory-btn" id="theory-btn">Теория</button>
+        </div>
+    </div>
+
+    <!-- Экран результатов -->
+    <div class="results-screen" id="results-screen">
+        <h2>Результаты викторины</h2>
+        <div class="score-display" id="score-display"></div>
+        <div class="results-list" id="results-list"></div>
+        <button class="restart-btn" id="restart-btn">Пройти викторину снова</button>
+    </div>
+
+    <script>
+        // Вопросы викторины с пояснениями
+        const questions = [
+            {
+                question: "1. Какой язык программирования был создан Бренданом Айком?",
+                options: ["Python", "Java", "JavaScript", "Ruby"],
+                correctAnswer: 2,
+                explanation: "JavaScript был создан Бренданом Айком в 1995 году для Netscape Navigator."
+            },
+            {
+                question: "2. Какой язык используется для разработки под iOS?",
+                options: ["Kotlin", "Swift", "Dart", "C#"],
+                correctAnswer: 1,
+                explanation: "Swift - язык программирования, разработанный Apple специально для платформ iOS, macOS и др."
+            },
+            {
+                question: "3. Какой язык является статически типизированным?",
+                options: ["Python", "Ruby", "TypeScript", "PHP"],
+                correctAnswer: 2,
+                explanation: "TypeScript добавляет статическую типизацию к JavaScript, проверяя типы на этапе компиляции."
+            },
+            {
+                question: "4. Какой язык разработан Google для Flutter?",
+                options: ["Go", "Dart", "Kotlin", "Rust"],
+                correctAnswer: 1,
+                explanation: "Dart - язык программирования, оптимизированный для создания пользовательских интерфейсов через Flutter."
+            },
+            {
+                question: "5. Какой язык использует расширение .rb?",
+                options: ["Rust", "Ruby", "R", "Reason"],
+                correctAnswer: 1,
+                explanation: "Ruby использует расширение .rb для файлов с исходным кодом."
+            },
+            {
+                question: "6. Какой язык создан как альтернатива JavaScript?",
+                options: ["TypeScript", "Dart", "Rust", "Go"],
+                correctAnswer: 2,
+                explanation: "Rust разрабатывался как безопасная альтернатива для системного программирования."
+            },
+            {
+                question: "7. Какой язык работает на JVM?",
+                options: ["Python", "Kotlin", "Go", "C++"],
+                correctAnswer: 1,
+                explanation: "Kotlin компилируется в байт-код JVM и полностью совместим с Java."
+            },
+            {
+                question: "8. Какой язык используется в Unity?",
+                options: ["F#", "C#", "Visual Basic", "TypeScript"],
+                correctAnswer: 1,
+                explanation: "C# - основной язык программирования для движка Unity."
+            },
+            {
+                question: "9. Какой язык следует принципу WORA?",
+                options: ["Java", "Python", "JavaScript", "C"],
+                correctAnswer: 0,
+                explanation: "Java следует принципу 'Write Once Run Anywhere' благодаря JVM."
+            },
+            {
+                question: "10. Какой язык назван в честь комедийного шоу?",
+                options: ["Ruby", "Python", "Perl", "Lua"],
+                correctAnswer: 1,
+                explanation: "Python назван в честь британского комедийного шоу 'Летающий цирк Монти Пайтона'."
+            },
+            {
+                question: "11. Какой язык создал Гвидо ван Россум?",
+                options: ["Ruby", "Python", "Perl", "Lua"],
+                correctAnswer: 1,
+                explanation: "Гвидо ван Россум начал разработку Python в 1989 году."
+            },
+            {
+                question: "12. Какой язык использует React Native?",
+                options: ["Dart", "JavaScript", "TypeScript", "Java"],
+                correctAnswer: 1,
+                explanation: "React Native использует JavaScript (или TypeScript) для создания кроссплатформенных мобильных приложений."
+            },
+            {
+                question: "13. Какой язык разработала Microsoft?",
+                options: ["Java", "C#", "Go", "Rust"],
+                correctAnswer: 1,
+                explanation: "C# был разработан Microsoft в 2000 году как часть платформы .NET."
+            },
+            {
+                question: "14. Какой язык используется для машинного обучения?",
+                options: ["Java", "C++", "Python", "Ruby"],
+                correctAnswer: 2,
+                explanation: "Python - самый популярный язык для машинного обучения благодаря богатой экосистеме библиотек."
+            },
+            {
+                question: "15. Какой язык самый быстрый из перечисленных?",
+                options: ["Python", "JavaScript", "C++", "Ruby"],
+                correctAnswer: 2,
+                explanation: "C++ - компилируемый язык, обеспечивающий наивысшую производительность из перечисленных."
+            },
+            {
+                question: "16. Какой язык используется для блокчейна?",
+                options: ["Python", "Solidity", "Java", "C#"],
+                correctAnswer: 1,
+                explanation: "Solidity - язык для написания смарт-контрактов в блокчейн-платформах, таких как Ethereum."
+            },
+            {
+                question: "17. Какой язык разработал Facebook?",
+                options: ["Dart", "Hack", "Go", "Rust"],
+                correctAnswer: 1,
+                explanation: "Hack - язык программирования, разработанный Facebook как модификация PHP."
+            },
+            {
+                question: "18. Какой язык используется в Android SDK?",
+                options: ["Swift", "Kotlin", "Dart", "JavaScript"],
+                correctAnswer: 1,
+                explanation: "Kotlin - официально рекомендованный язык для разработки под Android с 2017 года."
+            },
+            {
+                question: "19. Какой язык имеет талисмана-змею?",
+                options: ["Ruby", "Python", "Perl", "PHP"],
+                correctAnswer: 1,
+                explanation: "Официальный логотип Python - две змеи (голубая и желтая)."
+            },
+            {
+                question: "20. Какой язык создал Юкихиро Мацумото?",
+                options: ["Ruby", "Python", "Perl", "Lua"],
+                correctAnswer: 0,
+                explanation: "Юкихиро Мацумото создал Ruby в 1995 году, стремясь сделать язык более мощным, чем Perl, и более объектно-ориентированным, чем Python."
+            },
+            {
+                question: "21. Какой язык компилируется в WebAssembly?",
+                options: ["TypeScript", "Rust", "Dart", "Kotlin"],
+                correctAnswer: 1,
+                explanation: "Rust - один из языков, которые могут компилироваться в WebAssembly для выполнения в браузере с высокой производительностью."
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let selectedOption = null;
+        let score = 0;
+        let userAnswers = [];
+        
+        const startScreen = document.getElementById('start-screen');
+        const startBtn = document.getElementById('start-btn');
+        const theoryScreen = document.getElementById('theory-screen');
+        const startQuizBtn = document.getElementById('start-quiz-btn');
+        const quizContainer = document.getElementById('quiz-container');
+        const questionElement = document.getElementById('question');
+        const optionsElement = document.getElementById('options');
+        const submitButton = document.getElementById('submit-btn');
+        const theoryBtn = document.getElementById('theory-btn');
+        const progressElement = document.getElementById('progress');
+        const resultsScreen = document.getElementById('results-screen');
+        const scoreDisplay = document.getElementById('score-display');
+        const resultsList = document.getElementById('results-list');
+        const restartBtn = document.getElementById('restart-btn');
+        
+        // Запуск викторины
+        startBtn.addEventListener('click', () => {
+            startScreen.style.opacity = '0';
+            setTimeout(() => {
+                startScreen.style.display = 'none';
+                theoryScreen.style.display = 'flex';
+            }, 1000);
+        });
+        
+        // Начать викторину после теории
+        startQuizBtn.addEventListener('click', () => {
+            theoryScreen.style.display = 'none';
+            quizContainer.style.display = 'block';
+            showQuestion();
+        });
+        
+        // Открыть теорию во время викторины
+        theoryBtn.addEventListener('click', () => {
+            quizContainer.style.display = 'none';
+            theoryScreen.style.display = 'flex';
+        });
+        
+        // Перезапуск викторины
+        restartBtn.addEventListener('click', () => {
+            resultsScreen.style.display = 'none';
+            currentQuestionIndex = 0;
+            score = 0;
+            userAnswers = [];
+            quizContainer.style.display = 'block';
+            showQuestion();
+        });
+        
+        function showQuestion() {
+            const question = questions[currentQuestionIndex];
+            questionElement.textContent = question.question;
+            
+            optionsElement.innerHTML = '';
+            question.options.forEach((option, index) => {
+                const optionElement = document.createElement('div');
+                optionElement.classList.add('option');
+                optionElement.textContent = option;
+                optionElement.addEventListener('click', () => selectOption(index));
+                optionsElement.appendChild(optionElement);
+            });
+            
+            submitButton.disabled = true;
+            selectedOption = null;
+            
+            progressElement.textContent = `Вопрос ${currentQuestionIndex + 1} из ${questions.length}`;
+        }
+        
+        function selectOption(index) {
+            const options = document.querySelectorAll('.option');
+            options.forEach(option => {
+                option.classList.remove('selected');
+            });
+            
+            options[index].classList.add('selected');
+            selectedOption = index;
+            submitButton.disabled = false;
+        }
+        
+        submitButton.addEventListener('click', () => {
+            const question = questions[currentQuestionIndex];
+            const options = document.querySelectorAll('.option');
+            let isCorrect = false;
+            
+            options.forEach((option, index) => {
+                if (index === question.correctAnswer) {
+                    option.classList.add('correct');
+                } else if (index === selectedOption) {
+                    option.classList.add('wrong');
+                }
+            });
+            
+            // Запоминаем ответ пользователя
+            if (selectedOption === question.correctAnswer) {
+                score++;
+                isCorrect = true;
+            }
+            
+            userAnswers.push({
+                question: question.question,
+                userAnswer: question.options[selectedOption],
+                correctAnswer: question.options[question.correctAnswer],
+                isCorrect: isCorrect,
+                explanation: question.explanation
+            });
+            
+            submitButton.disabled = true;
+            
+            // Переход к следующему вопросу через 1.5 секунды
+            setTimeout(() => {
+                if (currentQuestionIndex < questions.length - 1) {
+                    currentQuestionIndex++;
+                    showQuestion();
+                } else {
+                    // Показываем результаты
+                    showResults();
+                }
+            }, 1500);
+        });
+        
+        function showResults() {
+            quizContainer.style.display = 'none';
+            resultsScreen.style.display = 'block';
+            
+            // Показываем общий счет
+            scoreDisplay.textContent = `Вы ответили правильно на ${score} из ${questions.length} вопросов`;
+            
+            // Показываем детали по каждому вопросу
+            resultsList.innerHTML = '';
+            userAnswers.forEach((answer, index) => {
+                const resultItem = document.createElement('div');
+                resultItem.className = `result-item ${answer.isCorrect ? 'correct' : 'wrong'}`;
+                
+                resultItem.innerHTML = `
+                    <p><strong>Вопрос ${index + 1}:</strong> ${answer.question}</p>
+                    <p>Ваш ответ: ${answer.userAnswer} ${answer.isCorrect ? '✓' : '✗'}</p>
+                    ${!answer.isCorrect ? `<p>Правильный ответ: ${answer.correctAnswer}</p>` : ''}
+                    <p>${answer.explanation}</p>
+                `;
+                
+                resultsList.appendChild(resultItem);
+            });
+        }
+    </script>
+</body>
+</html>
